@@ -1,13 +1,11 @@
 import React from "react";
 import axiosInstance from "@/lib/axios";
-import MessageHistoryContext from "@/context/MessageHistory";
+import { Message } from "@/types/Message";
 
 const useTalkWithTutor = (sessionId: string) => {
   const [messageFromTutor, setMessageFromTutor] = React.useState("");
   const [studentUnderstood, setStudentUnderstood] = React.useState(false);
-  const { state: messageHistory, dispatch } = React.useContext(
-    MessageHistoryContext
-  );
+  const [messageHistory, setMessageHistory] = React.useState<Message[]>([]);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
@@ -23,14 +21,11 @@ const useTalkWithTutor = (sessionId: string) => {
       const { messageFromTutor, studentUnderstood = false } =
         response.data?.data || {};
       setMessageFromTutor(messageFromTutor);
-      dispatch?.({
-        type: "",
-        payload: { role: "user", content: userInput },
-      });
-      dispatch?.({
-        type: "",
-        payload: { role: "system", content: messageFromTutor },
-      });
+      setMessageHistory((h) => [
+        ...h,
+        { role: "user", content: userInput },
+        { role: "system", content: messageFromTutor },
+      ]);
       setStudentUnderstood(studentUnderstood);
     } catch (err: unknown) {
       setIsError(true);
@@ -42,6 +37,7 @@ const useTalkWithTutor = (sessionId: string) => {
   return {
     sendMessage,
     messageHistory,
+    setMessageHistory,
     messageFromTutor,
     studentUnderstood,
     isLoading,
