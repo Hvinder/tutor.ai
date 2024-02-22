@@ -3,7 +3,6 @@ import axiosInstance from "@/lib/axios";
 import { Message } from "@/types/Message";
 
 const useTalkWithTutor = (sessionId: string) => {
-  const [messageFromTutor, setMessageFromTutor] = React.useState("");
   const [studentUnderstood, setStudentUnderstood] = React.useState(false);
   const [messageHistory, setMessageHistory] = React.useState<Message[]>([]);
 
@@ -14,17 +13,16 @@ const useTalkWithTutor = (sessionId: string) => {
     try {
       setIsLoading(true);
       setIsError(false);
+      setMessageHistory((h) => [...h, { role: "user", content: userInput }]);
       const response = await axiosInstance.post(
         `/word-game/chat/${sessionId}`,
         { userInput }
       );
       const { messageFromTutor, studentUnderstood = false } =
         response.data?.data || {};
-      setMessageFromTutor(messageFromTutor);
       setMessageHistory((h) => [
         ...h,
-        { role: "user", content: { details: userInput } },
-        { role: "system", content: { details: messageFromTutor } },
+        { role: "system", content: messageFromTutor },
       ]);
       setStudentUnderstood(studentUnderstood);
     } catch (err: unknown) {
@@ -38,7 +36,6 @@ const useTalkWithTutor = (sessionId: string) => {
     sendMessage,
     messageHistory,
     setMessageHistory,
-    messageFromTutor,
     studentUnderstood,
     isLoading,
     isError,

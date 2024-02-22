@@ -5,9 +5,13 @@ import { cn } from "@/lib/utils";
 
 type ChatBubbleProps = {
   message: Message;
+  isLoading?: boolean;
 };
 
-const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
+const ChatBubble: React.FC<ChatBubbleProps> = ({
+  message,
+  isLoading = false,
+}) => {
   const isTutor = message.role === "system";
 
   return (
@@ -30,12 +34,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       </Avatar>
       <div
         className={cn(
-          "max-w-[60%] w-fit rounded-md p-3",
+          "max-w-[60%] rounded-md p-3 transition-[height] duration-200 ease-in",
           isTutor ? "bg-slate-200" : "bg-slate-950",
-          isTutor ? "text-slate-950" : "text-slate-200"
+          isTutor ? "text-slate-950" : "text-slate-200",
+          isLoading ? "w-[60%]" : "w-fit"
         )}
       >
-        {message.content?.details}
+        {isLoading ? "..." : message.content}
       </div>
     </div>
   );
