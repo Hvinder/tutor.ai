@@ -1,3 +1,4 @@
+import ChatBubble from "@/components/ChatBubble";
 import NavBar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import useGetWord from "@/hooks/useGetWord";
@@ -38,13 +39,18 @@ const WordGame: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col absolute top-0 w-full items-center"
+      className="flex flex-col absolute top-0 w-full items-center gap-4"
       style={{ background: "hsl(var(--background))" }}
     >
       <NavBar />
-      <div>
-        <Button onClick={handleStartLearning}>Start</Button>
-      </div>
+      {messageHistory.length ? null : (
+        <div>
+          <Button onClick={handleStartLearning}>Start</Button>
+        </div>
+      )}
+      {messageHistory.map((msg) => (
+        <ChatBubble message={msg} />
+      ))}
     </div>
   );
 };

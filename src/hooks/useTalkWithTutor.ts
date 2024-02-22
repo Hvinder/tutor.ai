@@ -23,8 +23,8 @@ const useTalkWithTutor = (sessionId: string) => {
       setMessageFromTutor(messageFromTutor);
       setMessageHistory((h) => [
         ...h,
-        { role: "user", content: userInput },
-        { role: "system", content: messageFromTutor },
+        { role: "user", content: { details: userInput } },
+        { role: "system", content: { details: messageFromTutor } },
       ]);
       setStudentUnderstood(studentUnderstood);
     } catch (err: unknown) {
