@@ -104,30 +104,46 @@ const useTalkWithTutor = (sessionId: string) => {
   };
 
   const startQuestions = async (attempt?: number) => {
-    if (gameSessionObj.questionsAttempt > 3) {
-      return;
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      if (gameSessionObj.questionsAttempt > 3) {
+        return;
+      }
+      const response = await axiosInstance.get<{
+        data: { gameSession: GameSession; questionId: string };
+      }>(
+        `/word-game/question/${sessionId}?word=${gameSessionObj.word}&attempt=${
+          attempt || gameSessionObj.questionsAttempt
+        }`
+      );
+      const { gameSession, questionId } = response.data?.data || {};
+      if (gameSession) {
+        setGameSessionObj(gameSession);
+      }
+      setCurrentQuestionId(questionId);
+    } catch (err: unknown) {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
     }
-    const response = await axiosInstance.get<{
-      data: { gameSession: GameSession; questionId: string };
-    }>(
-      `/word-game/question/${sessionId}?word=${gameSessionObj.word}&attempt=${
-        attempt || gameSessionObj.questionsAttempt
-      }`
-    );
-    const { gameSession, questionId } = response.data?.data || {};
-    if (gameSession) {
-      setGameSessionObj(gameSession);
-    }
-    setCurrentQuestionId(questionId);
   };
 
   const initSession = async (sessionId: string) => {
-    const response = await axiosInstance.get<{ data: GameSession }>(
-      `/word-game/${sessionId}`
-    );
-    const gameSession = response.data.data;
-    if (gameSession) {
-      setGameSessionObj(response.data.data);
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      const response = await axiosInstance.get<{ data: GameSession }>(
+        `/word-game/${sessionId}`
+      );
+      const gameSession = response.data.data;
+      if (gameSession) {
+        setGameSessionObj(response.data.data);
+      }
+    } catch (err: unknown) {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 

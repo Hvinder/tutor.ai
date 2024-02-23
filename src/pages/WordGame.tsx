@@ -92,13 +92,15 @@ const WordGame: React.FC = () => {
               </Button>
             </div>
           </>
+        ) : isMessageLoading ? (
+          <LoadingSpinner />
         ) : (
           <div className="flex flex-col justify-center items-center gap-4 mt-40">
             <Label className="text-lg">
               Word of the day is {gameSessionObj.word}
             </Label>
             <Button onClick={handleStartLearning} className="min-w-32 w-fit">
-              {isMessageLoading ? <LoadingSpinner /> : "Start session"}
+              Start session
             </Button>
           </div>
         )}
