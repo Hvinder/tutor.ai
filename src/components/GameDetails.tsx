@@ -7,7 +7,7 @@ const GameDetails: React.FC<{ gameSession: GameSession; word: string }> = ({
   word,
 }) => {
   return (
-    <div className="md:w-3/5 w-[90%] flex items-center justify-center border border-solid border-slate-950 rounded-xl py-5 px-3">
+    <div className="md:w-3/5 w-[90%] flex items-center justify-center border border-solid border-slate-950 rounded-xl py-5 px-3 fixed bg-white z-10">
       {gameSession.studentUnderstood ? (
         <div className="flex flex-col items-center justify-between w-3/5 gap-4">
           <Label className="font-bold">{`MCQ MODE - ${word}`}</Label>

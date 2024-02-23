@@ -66,7 +66,7 @@ const WordGame: React.FC = () => {
         )}
         {gameSessionObj.messageHistory.length ? (
           <>
-            <div className="flex flex-col items-center justify-between gap-4 w-full">
+            <div className="flex flex-col items-center justify-between gap-4 w-full !mt-24">
               {gameSessionObj.messageHistory.map((msg, i) => (
                 <ChatBubble key={msg._id || i} message={msg} />
               ))}
@@ -77,7 +77,7 @@ const WordGame: React.FC = () => {
                 />
               ) : null}
             </div>
-            <div className="flex w-full flex-col gap-2 fixed z-10 bottom-0 py-5 px-4 bg-white">
+            <div className="flex w-full md:w-4/5 flex-col gap-2 fixed z-10 bottom-0 py-5 px-4 bg-white">
               <Textarea
                 placeholder="Type your message here."
                 value={userInput}
@@ -97,17 +97,20 @@ const WordGame: React.FC = () => {
             {isMessageLoading ? (
               <LoadingSpinner size={96} />
             ) : (
-              <>
-                <Label className="text-lg">
-                  Word of the day is {gameSessionObj.word}
-                </Label>
+              <div className="flex flex-col justify-center items-center gap-24">
+                <div className="flex flex-col justify-center items-center">
+                  <Label className="text-lg font-light">
+                    Word of the day is
+                  </Label>
+                  <Label className="text-5xl">{`"${gameSessionObj.word}"`}</Label>
+                </div>
                 <Button
                   onClick={handleStartLearning}
                   className="min-w-32 w-fit"
                 >
                   Start session
                 </Button>
-              </>
+              </div>
             )}
           </div>
         )}
