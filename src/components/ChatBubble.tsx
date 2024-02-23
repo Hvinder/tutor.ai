@@ -35,17 +35,30 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
           <PersonIcon className="h-6 w-6" />
         </div>
       )}
-      <div
-        className={cn(
-          "max-w-[60%] rounded-md p-3 transition-[height] duration-200 ease-in",
-          isTutor ? "bg-slate-200" : "bg-slate-950",
-          isTutor ? "text-slate-950" : "text-slate-200",
-          isLoading ? "w-[60%]" : "w-fit"
-        )}
-        dangerouslySetInnerHTML={{
-          __html: isLoading ? "..." : message.content,
-        }}
-      />
+      {isLoading ? (
+        <div className="max-w-[60%] rounded-md p-3 transition-[height] duration-200 ease-in bg-slate-200 text-slate-950 w-[60%]">
+          <div className="flex flex-col gap-2 animate-pulse">
+            <div className="h-2 bg-slate-400 rounded w-full"></div>
+            <div className="flex gap-2 animate-pulse">
+              <div className="h-2 bg-slate-400 rounded w-7/12"></div>
+              <div className="h-2 bg-slate-400 rounded w-5/12"></div>
+            </div>
+            <div className="h-2 bg-slate-400 rounded w-3/12"></div>
+          </div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            "max-w-[60%] rounded-md p-3 transition-[height] duration-200 ease-in",
+            isTutor ? "bg-slate-200" : "bg-slate-950",
+            isTutor ? "text-slate-950" : "text-slate-200",
+            isLoading ? "w-[60%]" : "w-fit"
+          )}
+          dangerouslySetInnerHTML={{
+            __html: message.content,
+          }}
+        />
+      )}
     </div>
   );
 };
