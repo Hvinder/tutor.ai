@@ -1,4 +1,5 @@
 import ChatBubble from "@/components/ChatBubble";
+import GameDetails from "@/components/GameDetails";
 import { LoadingSpinner } from "@/components/Loader";
 import NavBar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -56,10 +57,15 @@ const WordGame: React.FC = () => {
       style={{ background: "hsl(var(--background))" }}
     >
       <NavBar />
-      <div className="lg:w-4/5 w-full space-y-5 p-2">
+      <div className="lg:w-4/5 w-full space-y-5 p-2 flex flex-col items-center mt-16 mb-40">
+        {gameSessionObj.messageHistory.length ? (
+          <GameDetails gameSession={gameSessionObj} word={word} />
+        ) : (
+          <></>
+        )}
         {gameSessionObj.messageHistory.length ? (
           <>
-            <div className="flex flex-col items-center justify-center gap-4">
+            <div className="flex flex-col items-center justify-between gap-4 w-full">
               {gameSessionObj.messageHistory.map((msg, i) => (
                 <ChatBubble key={msg._id || i} message={msg} />
               ))}
@@ -70,7 +76,7 @@ const WordGame: React.FC = () => {
                 />
               ) : null}
             </div>
-            <div className="flex w-full flex-col gap-2">
+            <div className="flex w-full flex-col gap-2 fixed z-10 bottom-0 py-5 px-4 bg-white">
               <Textarea
                 placeholder="Type your message here."
                 value={userInput}

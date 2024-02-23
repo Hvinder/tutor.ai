@@ -8,7 +8,7 @@ const NavBar: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full h-16 bg-black flex items-center justify-between px-16">
+    <div className="w-full h-16 bg-black flex items-center justify-between px-16 fixed z-10">
       <Label
         className="text-white font-bold cursor-pointer"
         onClick={() => navigate("/")}
