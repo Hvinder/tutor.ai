@@ -6,35 +6,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import useGetWord from "@/hooks/useGetWord";
 import useTalkWithTutor from "@/hooks/useTalkWithTutor";
-import axiosInstance from "@/lib/axios";
-import { Message } from "@/types/Message";
 import { Label } from "@radix-ui/react-label";
 import React from "react";
 import { useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 const WordGame: React.FC = () => {
   const { sessionId = "1" } = useParams();
   const { word, isLoading: isWordLoading } = useGetWord();
   const {
     sendMessage,
-    messageHistory,
-    setMessageHistory,
+    gameSessionObj,
+    initSession,
     isLoading: isMessageLoading,
   } = useTalkWithTutor(sessionId, word);
   const { toast } = useToast();
 
+  const disableUserActivity =
+    gameSessionObj.isComplete ||
+    gameSessionObj.isLearnAgain ||
+    isMessageLoading;
+
   const [userInput, setUserInput] = React.useState("");
 
   React.useEffect(() => {
-    localStorage.setItem("sessionId", sessionId);
-    (async () => {
-      const existingMessageHistory = await axiosInstance.get<{
-        data: { sessionHistory: Message[] };
-      }>(`/word-game/history/${sessionId}`);
-      setMessageHistory(
-        existingMessageHistory?.data?.data?.sessionHistory || []
-      );
-    })();
+    initSession(sessionId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
@@ -61,15 +57,15 @@ const WordGame: React.FC = () => {
     >
       <NavBar />
       <div className="lg:w-4/5 w-full space-y-5 p-2">
-        {messageHistory.length ? (
+        {gameSessionObj.messageHistory.length ? (
           <>
             <div className="flex flex-col items-center justify-center gap-4">
-              {messageHistory.map((msg, i) => (
-                <ChatBubble key={i} message={msg} />
+              {gameSessionObj.messageHistory.map((msg, i) => (
+                <ChatBubble key={msg._id || i} message={msg} />
               ))}
               {isMessageLoading ? (
                 <ChatBubble
-                  message={{ role: "system", content: "" }}
+                  message={{ role: "system", content: "", _id: uuidv4() }}
                   isLoading
                 />
               ) : null}
@@ -79,8 +75,14 @@ const WordGame: React.FC = () => {
                 placeholder="Type your message here."
                 value={userInput}
                 onChange={(ev) => setUserInput(ev.target.value)}
+                disabled={disableUserActivity}
               />
-              <Button onClick={handleSubmitUserInput}>Send message</Button>
+              <Button
+                onClick={handleSubmitUserInput}
+                disabled={disableUserActivity}
+              >
+                Send message
+              </Button>
             </div>
           </>
         ) : (

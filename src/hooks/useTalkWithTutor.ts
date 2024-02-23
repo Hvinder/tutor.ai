@@ -1,51 +1,64 @@
 import React from "react";
+import { v4 as uuidv4 } from "uuid";
+
 import axiosInstance from "@/lib/axios";
-import { Message } from "@/types/Message";
+import { GameSession } from "@/types/Message";
+
+const initialGameSessionState = {
+  id: "",
+  messageHistory: [],
+  questionsAttempt: 1,
+  studentScore: 0,
+  studentUnderstood: false,
+  isComplete: false,
+  isLearnAgain: false,
+};
 
 const useTalkWithTutor = (sessionId: string, word: string) => {
-  const [studentUnderstood, setStudentUnderstood] = React.useState(false);
-  const [messageHistory, setMessageHistory] = React.useState<Message[]>([]);
-  const [studentScore, setStudentScore] = React.useState(0);
-  const [questionsAttempt, setQuestionsAttempt] = React.useState(1);
+  const [gameSessionObj, setGameSessionObj] = React.useState<GameSession>(
+    initialGameSessionState
+  );
+
   const [currentQuestionId, setCurrentQuestionId] = React.useState("");
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(false);
-  const [isComplete, setIsComplete] = React.useState(false);
-  const [isLearnAgain, setIsLearnAgain] = React.useState(false);
 
   const sendMessage = async (userInput: string) => {
-    if (studentUnderstood) {
+    if (gameSessionObj.studentUnderstood) {
       await attemptAnswer(userInput);
     } else {
       await chatWithTutor(userInput);
     }
   };
+
   const chatWithTutor = async (userInput: string) => {
     try {
       setIsLoading(true);
       setIsError(false);
-      setMessageHistory((h) => [...h, { role: "user", content: userInput }]);
-      const response = await axiosInstance.post(
+      // optimistic update
+      const tempId = uuidv4();
+      setGameSessionObj((g) => ({
+        ...g,
+        messageHistory: [
+          ...(g?.messageHistory || []),
+          { role: "user", content: userInput, _id: tempId },
+        ],
+      }));
+      const response = await axiosInstance.post<{ data: GameSession }>(
         `/word-game/chat/${sessionId}`,
-        { userInput }
+        { userInput, tempId }
       );
-      const {
-        messageFromTutor,
-        studentUnderstood: currentStudentUnderstood = false,
-      } = response.data?.data || {};
-      setMessageHistory((h) => [
-        ...h,
-        { role: "system", content: messageFromTutor },
-      ]);
-      if (currentStudentUnderstood && !studentUnderstood) {
-        setMessageHistory((h) => [
-          ...h,
-          { role: "system", content: "Now answer the following questions" },
-        ]);
+      const gameSession = response.data?.data;
+      if (
+        gameSession?.studentUnderstood &&
+        !gameSessionObj?.studentUnderstood
+      ) {
         startQuestions();
       }
-      setStudentUnderstood(currentStudentUnderstood);
+      if (gameSession) {
+        setGameSessionObj(gameSession);
+      }
     } catch (err: unknown) {
       setIsError(true);
     } finally {
@@ -57,44 +70,26 @@ const useTalkWithTutor = (sessionId: string, word: string) => {
     try {
       setIsLoading(true);
       setIsError(false);
-      setMessageHistory((h) => [...h, { role: "user", content: userInput }]);
-      const response = await axiosInstance.post(
+      // optimistic update
+      const tempId = uuidv4();
+      setGameSessionObj((g) => ({
+        ...g,
+        messageHistory: [
+          ...(g?.messageHistory || []),
+          { role: "user", content: userInput, _id: tempId },
+        ],
+      }));
+      const response = await axiosInstance.post<{ data: GameSession }>(
         `/word-game/answer/${sessionId}`,
         { userInput, word, questionId: currentQuestionId }
       );
-      const { messageFromTutor, isCorrect = false } = response.data?.data || {};
-      setMessageHistory((h) => [
-        ...h,
-        { role: "system", content: messageFromTutor },
-      ]);
-      if (isCorrect) {
-        const newScore = studentScore + 1;
-        if (newScore === 2) {
-          setIsComplete(true);
-          setMessageHistory((h) => [
-            ...h,
-            {
-              role: "system",
-              content: `Congratulations! You've successfully learnt the word ${word}. Try using it while conversing with your friends.`,
-            },
-          ]);
-          return;
+      const gameSession = response.data?.data;
+      if (gameSession) {
+        setGameSessionObj(gameSession);
+        if (!gameSession.isComplete && !gameSession.isLearnAgain) {
+          startQuestions(gameSession.questionsAttempt);
         }
-        setStudentScore((s) => s + 1);
       }
-      const newAttempt = questionsAttempt + 1;
-      if (newAttempt > 3) {
-        setMessageHistory((h) => [
-          ...h,
-          {
-            role: "system",
-            content: `You may need to revisit the word again. Let's try learning about ${word} from the top and circle back to the questions.`,
-          },
-        ]);
-        setIsLearnAgain(true);
-      }
-      setQuestionsAttempt((a) => a + 1);
-      startQuestions(newAttempt);
     } catch (err: unknown) {
       setIsError(true);
     } finally {
@@ -103,31 +98,39 @@ const useTalkWithTutor = (sessionId: string, word: string) => {
   };
 
   const startQuestions = async (attempt?: number) => {
-    if (questionsAttempt > 3) {
+    if (gameSessionObj.questionsAttempt > 3) {
       return;
     }
-    const response = await axiosInstance.get(
+    const response = await axiosInstance.get<{
+      data: { gameSession: GameSession; questionId: string };
+    }>(
       `/word-game/question/${sessionId}?word=${word}&attempt=${
-        attempt || questionsAttempt
+        attempt || gameSessionObj.questionsAttempt
       }`
     );
-    setMessageHistory((h) => [
-      ...h,
-      { role: "system", content: response.data?.data?.questionContent },
-    ]);
-    setCurrentQuestionId(response.data?.data?.questionId);
+    const { gameSession, questionId } = response.data?.data || {};
+    if (gameSession) {
+      setGameSessionObj(gameSession);
+    }
+    setCurrentQuestionId(questionId);
+  };
+
+  const initSession = async (sessionId: string) => {
+    const response = await axiosInstance.get<{ data: GameSession }>(
+      `/word-game/history/${sessionId}`
+    );
+    const gameSession = response.data.data;
+    if (gameSession) {
+      setGameSessionObj(response.data.data);
+    }
   };
 
   return {
     sendMessage,
-    studentScore,
-    questionsAttempt,
-    messageHistory,
-    setMessageHistory,
+    gameSessionObj,
     isLoading,
     isError,
-    isComplete,
-    isLearnAgain,
+    initSession,
   };
 };
 
