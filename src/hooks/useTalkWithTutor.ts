@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import axiosInstance from "@/lib/axios";
 import { GameSession } from "@/types/Message";
 
-const initialGameSessionState = {
+const initialGameSessionState: GameSession = {
   id: "",
   messageHistory: [],
   questionsAttempt: 1,
@@ -12,9 +12,10 @@ const initialGameSessionState = {
   studentUnderstood: false,
   isComplete: false,
   isLearnAgain: false,
+  word: "",
 };
 
-const useTalkWithTutor = (sessionId: string, word: string) => {
+const useTalkWithTutor = (sessionId: string) => {
   const [gameSessionObj, setGameSessionObj] = React.useState<GameSession>(
     initialGameSessionState
   );
@@ -81,7 +82,12 @@ const useTalkWithTutor = (sessionId: string, word: string) => {
       }));
       const response = await axiosInstance.post<{ data: GameSession }>(
         `/word-game/answer/${sessionId}`,
-        { userInput, word, questionId: currentQuestionId }
+        {
+          userInput,
+          word: gameSessionObj.word,
+          questionId: currentQuestionId,
+          tempId,
+        }
       );
       const gameSession = response.data?.data;
       if (gameSession) {
@@ -104,7 +110,7 @@ const useTalkWithTutor = (sessionId: string, word: string) => {
     const response = await axiosInstance.get<{
       data: { gameSession: GameSession; questionId: string };
     }>(
-      `/word-game/question/${sessionId}?word=${word}&attempt=${
+      `/word-game/question/${sessionId}?word=${gameSessionObj.word}&attempt=${
         attempt || gameSessionObj.questionsAttempt
       }`
     );
@@ -117,7 +123,7 @@ const useTalkWithTutor = (sessionId: string, word: string) => {
 
   const initSession = async (sessionId: string) => {
     const response = await axiosInstance.get<{ data: GameSession }>(
-      `/word-game/history/${sessionId}`
+      `/word-game/${sessionId}`
     );
     const gameSession = response.data.data;
     if (gameSession) {

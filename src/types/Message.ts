@@ -14,4 +14,5 @@ export type GameSession = {
   studentUnderstood: boolean;
   isComplete: boolean;
   isLearnAgain: boolean;
+  word: string;
 };

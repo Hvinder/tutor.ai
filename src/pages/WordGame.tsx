@@ -5,7 +5,6 @@ import NavBar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import useGetWord from "@/hooks/useGetWord";
 import useTalkWithTutor from "@/hooks/useTalkWithTutor";
 import { Label } from "@radix-ui/react-label";
 import React from "react";
@@ -14,13 +13,12 @@ import { v4 as uuidv4 } from "uuid";
 
 const WordGame: React.FC = () => {
   const { sessionId = "1" } = useParams();
-  const { word, isLoading: isWordLoading } = useGetWord();
   const {
     sendMessage,
     gameSessionObj,
     initSession,
     isLoading: isMessageLoading,
-  } = useTalkWithTutor(sessionId, word);
+  } = useTalkWithTutor(sessionId);
   const { toast } = useToast();
 
   const disableUserActivity =
@@ -36,7 +34,7 @@ const WordGame: React.FC = () => {
   }, [sessionId]);
 
   const handleStartLearning = () => {
-    sendMessage(`Word of the day is ${word}`);
+    sendMessage(`Word of the day is ${gameSessionObj.word}`);
   };
 
   const handleSubmitUserInput = () => {
@@ -59,7 +57,10 @@ const WordGame: React.FC = () => {
       <NavBar />
       <div className="lg:w-4/5 w-full space-y-5 p-2 flex flex-col items-center mt-16 mb-40">
         {gameSessionObj.messageHistory.length ? (
-          <GameDetails gameSession={gameSessionObj} word={word} />
+          <GameDetails
+            gameSession={gameSessionObj}
+            word={gameSessionObj.word}
+          />
         ) : (
           <></>
         )}
@@ -93,9 +94,11 @@ const WordGame: React.FC = () => {
           </>
         ) : (
           <div className="flex flex-col justify-center items-center gap-4 mt-40">
-            <Label className="text-lg">Word of the day is {word}</Label>
+            <Label className="text-lg">
+              Word of the day is {gameSessionObj.word}
+            </Label>
             <Button onClick={handleStartLearning} className="min-w-32 w-fit">
-              {isWordLoading ? <LoadingSpinner /> : "Start session"}
+              {isMessageLoading ? <LoadingSpinner /> : "Start session"}
             </Button>
           </div>
         )}
