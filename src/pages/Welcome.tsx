@@ -11,13 +11,13 @@ const Welcome: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col absolute top-0 w-full items-center"
+      className="flex flex-col absolute top-0 w-full items-center overscroll-none"
       style={{ background: "hsl(var(--background))" }}
     >
       <NavBar />
-      <div className="flex flex-col items-center justify-center gap-5 mt-10 w-[500px]">
+      <div className="flex flex-col items-center justify-center gap-5 mt-10 max-w-[500px]">
         <div className="w-[400px] h-[250px] rounded-md bg-slate-300" />
-        <Label className="text-lg text-center">
+        <Label className="text-lg text-center md:w-full w-4/5">
           Hi there! I'm here to help you learn new words - everyday! Ready to
           get started?
         </Label>

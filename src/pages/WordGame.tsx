@@ -19,9 +19,8 @@ const WordGame: React.FC = () => {
     sendMessage,
     messageHistory,
     setMessageHistory,
-    // studentUnderstood,
     isLoading: isMessageLoading,
-  } = useTalkWithTutor(sessionId);
+  } = useTalkWithTutor(sessionId, word);
   const { toast } = useToast();
 
   const [userInput, setUserInput] = React.useState("");
@@ -52,6 +51,7 @@ const WordGame: React.FC = () => {
       return;
     }
     sendMessage(userInput);
+    setUserInput("");
   };
 
   return (
@@ -60,10 +60,10 @@ const WordGame: React.FC = () => {
       style={{ background: "hsl(var(--background))" }}
     >
       <NavBar />
-      <div className="w-4/5 space-y-5">
+      <div className="lg:w-4/5 w-full space-y-5 p-2">
         {messageHistory.length ? (
           <>
-            <div className="flex flex-col items-center justify-center gap-4 mt-10 h-[70%]">
+            <div className="flex flex-col items-center justify-center gap-4">
               {messageHistory.map((msg, i) => (
                 <ChatBubble key={i} message={msg} />
               ))}
